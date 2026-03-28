@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>talgap — Research Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #010042;
+    --navy-80: rgba(1,0,66,0.8);
+    --white: #ffffff;
+    --off-white: #f8f8fc;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --green: #16a34a;
+    --amber: #ca8a04;
+    --red: #dc2626;
+    --indigo: #4f46e5;
+    --indigo-light: #eef2ff;
+    --radius: 12px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--white);
+    color: var(--navy);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ─── Typography ─── */
+  .display { font-family: 'Playfair Display', serif; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  h1, h2, h3 { font-family: 'Playfair Display', serif; }
+  h1 { font-size: clamp(2.5rem, 6vw, 5rem); line-height: 1.05; letter-spacing: -0.02em; font-weight: 700; }
+  h2 { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.1; letter-spacing: -0.02em; font-weight: 600; }
+  h3 { font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 600; line-height: 1.3; }
+
+  p { font-size: 1rem; line-height: 1.75; color: var(--gray-700); }
+
+  /* ─── Layout ─── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 clamp(1.5rem, 5vw, 4rem); }
+  .section { padding: clamp(4rem, 10vw, 8rem) 0; }
+
+  /* ─── Scroll reveal ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.65s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.65s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: 60px;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex; align-items: center;
+  }
+  nav .container { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+  .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: var(--navy); letter-spacing: -0.03em; }
+  .nav-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 500;
+    background: var(--indigo-light); color: var(--indigo);
+    padding: 4px 10px; border-radius: 100px;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    background: var(--navy);
+    display: flex; align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding-top: 60px;
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at 50% 50%, black 40%, transparent 90%);
+  }
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(79,70,229,0.18) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    pointer-events: none;
+  }
+  .hero-content { position: relative; z-index: 1; padding: clamp(4rem, 10vw, 8rem) 0; }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 2rem;
+  }
+  .hero-eyebrow::before {
+    content: ''; display: block;
+    width: 28px; height: 1px;
+    background: rgba(255,255,255,0.3);
+  }
+  .hero h1 { color: var(--white); max-width: 820px; }
+  .hero h1 em { color: rgba(255,255,255,0.45); font-style: normal; }
+  .hero-sub {
+    font-size: clamp(1rem, 1.8vw, 1.2rem);
+    color: rgba(255,255,255,0.6);
+    max-width: 560px;
+    margin-top: 1.5rem;
+    line-height: 1.7;
+  }
+  .hero-badges {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-top: 2.5rem;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-radius: 100px;
+    font-size: 0.8rem; font-weight: 500;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.05);
+  }
+  .badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+  }
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.5px;
+    margin-top: 5rem;
+    background: rgba(255,255,255,0.06);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .hero-stat {
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    background: rgba(255,255,255,0.03);
+  }
+  .hero-stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 700; color: var(--white);
+    line-height: 1;
+  }
+  .hero-stat-label {
+    font-size: 0.78rem; color: rgba(255,255,255,0.5);
+    margin-top: 0.5rem; line-height: 1.4;
+    font-weight: 400;
+  }
+
+  /* ─── SECTION: PROBLEM ─── */
+  .section-problem { background: var(--white); }
+  .problem-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4rem; align-items: start;
+    margin-top: 4rem;
+  }
+  @media (max-width: 768px) { .problem-grid { grid-template-columns: 1fr; gap: 2.5rem; } }
+
+  .problem-lead {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    line-height: 1.5; color: var(--navy);
+    font-weight: 500;
+  }
+
+  .stat-block {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-block::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .stat-block.red::before { background: var(--red); }
+  .stat-block.amber::before { background: var(--amber); }
+  .stat-block.green::before { background: var(--green); }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700; line-height: 1;
+    color: var(--navy);
+  }
+  .stat-source {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; color: var(--gray-500);
+    margin-top: 0.75rem; letter-spacing: 0.03em;
+  }
+
+  .evidence-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 3rem;
+    font-size: 0.9rem;
+  }
+  .evidence-table th {
+    text-align: left; padding: 0.75rem 1rem;
+    background: var(--gray-100);
+    font-size: 0.72rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--gray-500);
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .evidence-table td {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    vertical-align: middle;
+  }
+  .evidence-table tr:last-child td { border-bottom: none; }
+  .verdict {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.78rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 100px;
+  }
+  .verdict.dead { background: #fee2e2; color: #b91c1c; }
+  .verdict.weak { background: #fef3c7; color: #92400e; }
+  .verdict.works { background: #dcfce7; color: #166534; }
+
+  /* ─── SECTION: RESEARCH DARK ─── */
+  .section-dark {
+    background: var(--navy);
+    color: var(--white);
+  }
+  .section-dark p { color: rgba(255,255,255,0.65); }
+  .section-dark h2 { color: var(--white); }
+  .section-dark h3 { color: var(--white); }
+
+  .section-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-eyebrow::before {
+    content: ''; width: 24px; height: 1px;
+    background: currentColor;
+  }
+  .section-dark .section-eyebrow { color: rgba(255,255,255,0.3); }
+
+  .institutions-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1.5px;
+    margin-top: 3.5rem;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  @media (max-width: 640px) { .institutions-grid { grid-template-columns: 1fr; } }
+
+  .institution-card {
+    padding: 2rem 2.25rem;
+    background: rgba(255,255,255,0.03);
+    transition: background 0.25s;
+    cursor: default;
+  }
+  .institution-card:hover { background: rgba(255,255,255,0.06); }
+  .institution-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 0.75rem;
+  }
+  .institution-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; font-weight: 600; color: var(--white);
+    margin-bottom: 0.5rem;
+  }
+  .institution-insight {
+    font-size: 0.88rem; color: rgba(255,255,255,0.55); line-height: 1.6;
+  }
+  .institution-quote {
+    margin-top: 1rem; padding: 1rem;
+    background: rgba(255,255,255,0.05);
+    border-left: 2px solid rgba(255,255,255,0.2);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.82rem; color: rgba(255,255,255,0.45);
+    font-style: italic;
+  }
+
+  /* ─── SECTION: GAPS ─── */
+  .gaps-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem; margin-top: 3.5rem;
+  }
+  @media (max-width: 768px) { .gaps-grid { grid-template-columns: 1fr; } }
+
+  .gap-card {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    background: var(--white);
+    transition: box-shadow 0.3s, transform 0.3s;
+  }
+  .gap-card:hover {
+    box-shadow: 0 12px 40px rgba(1,0,66,0.1);
+    transform: translateY(-2px);
+  }
+  .gap-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem; font-weight: 700;
+    color: var(--gray-200); line-height: 1;
+    position: absolute; top: 1rem; right: 1.5rem;
+  }
+  .gap-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--indigo); margin-bottom: 0.75rem;
+  }
+  .gap-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; font-family: 'Playfair Display', serif; }
+  .gap-body { font-size: 0.85rem; line-height: 1.65; }
+
+  /* ─── SECTION: PRODUCT ─── */
+  .section-product { background: var(--off-white); }
+
+  .flow-timeline {
+    margin-top: 3.5rem;
+    position: relative;
+  }
+  .flow-timeline::before {
+    content: '';
+    position: absolute;
+    left: 28px; top: 28px; bottom: 28px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--indigo) 0%, var(--navy) 100%);
+    border-radius: 1px;
+  }
+  @media (max-width: 640px) { .flow-timeline::before { display: none; } }
+
+  .flow-step {
+    display: flex; gap: 2rem;
+    margin-bottom: 2rem;
+    align-items: flex-start;
+  }
+  .flow-step:last-child { margin-bottom: 0; }
+  .flow-dot {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    position: relative; z-index: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; font-weight: 500; color: var(--white);
+    border: 3px solid var(--off-white);
+  }
+  .flow-content {
+    flex: 1; padding-top: 0.6rem;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 1.5rem 1.75rem;
+    margin-top: 4px;
+  }
+  .flow-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+  .flow-title { font-size: 1rem; font-weight: 600; color: var(--navy); }
+  .flow-duration {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; color: var(--gray-500);
+    background: var(--gray-100);
+    padding: 3px 9px; border-radius: 100px;
+  }
+  .flow-desc { font-size: 0.85rem; line-height: 1.65; }
+  .flow-tags {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.875rem;
+  }
+  .flow-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.06em;
+    padding: 3px 9px; border-radius: 100px;
+    background: var(--indigo-light); color: var(--indigo);
+  }
+
+  /* ─── SECTION: DIMENSIONS ─── */
+  .dimensions-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 0; margin-top: 3.5rem;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  @media (max-width: 900px) { .dimensions-grid { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 560px) { .dimensions-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .dim-card {
+    padding: 1.5rem 1.25rem;
+    border-right: 1px solid var(--gray-200);
+    border-bottom: 1px solid var(--gray-200);
+    text-align: center;
+    background: var(--white);
+    transition: background 0.25s;
+  }
+  .dim-card:hover { background: var(--indigo-light); }
+  .dim-icon { font-size: 1.5rem; margin-bottom: 0.625rem; }
+  .dim-name {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--navy);
+    line-height: 1.3;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .dim-source { font-size: 0.65rem; color: var(--gray-500); margin-top: 0.375rem; line-height: 1.4; }
+
+  .scoring-row {
+    display: grid; grid-template-columns: 2fr 3fr 2fr;
+    gap: 1rem; padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--gray-200);
+    align-items: center;
+    font-size: 0.875rem;
+  }
+  .scoring-row:last-child { border-bottom: none; }
+  .scoring-row.header {
+    background: var(--gray-100);
+    font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--gray-500);
+  }
+  .scoring-table {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-top: 2rem;
+  }
+
+  /* ─── SECTION: FAIRNESS ─── */
+  .fairness-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 2rem; margin-top: 3.5rem;
+  }
+  @media (max-width: 640px) { .fairness-grid { grid-template-columns: 1fr; } }
+
+  .fairness-card {
+    border-radius: var(--radius); padding: 2rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .fairness-card h3 { color: var(--white); margin-bottom: 1rem; }
+
+  .failure-item {
+    display: flex; gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    align-items: flex-start;
+  }
+  .failure-item:last-child { border-bottom: none; }
+  .failure-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: rgba(220,38,38,0.15);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+  }
+  .failure-title { font-size: 0.85rem; font-weight: 600; color: var(--white); margin-bottom: 0.25rem; }
+  .failure-desc { font-size: 0.78rem; color: rgba(255,255,255,0.5); line-height: 1.5; }
+
+  .principle-item {
+    display: flex; gap: 0.75rem; align-items: flex-start;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .principle-item:last-child { border-bottom: none; }
+  .principle-check {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(22,163,74,0.2);
+    color: #4ade80;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; flex-shrink: 0; margin-top: 1px;
+  }
+  .principle-text { font-size: 0.85rem; color: rgba(255,255,255,0.65); line-height: 1.5; }
+
+  /* ─── SECTION: STACK ─── */
+  .stack-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem; margin-top: 3rem;
+  }
+  .stack-item {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    text-align: center;
+    background: var(--white);
+    transition: all 0.25s;
+  }
+  .stack-item:hover { border-color: var(--navy); box-shadow: 0 4px 16px rgba(1,0,66,0.08); }
+  .stack-name { font-size: 0.82rem; font-weight: 600; color: var(--navy); margin-bottom: 0.25rem; }
+  .stack-role { font-size: 0.7rem; color: var(--gray-500); }
+  .stack-cost {
+    display: inline-block; margin-top: 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; padding: 2px 8px; border-radius: 100px;
+    background: #dcfce7; color: #166534;
+  }
+
+  .total-cost {
+    text-align: center; margin-top: 3rem;
+    padding: 2.5rem;
+    background: var(--navy);
+    border-radius: 16px;
+    color: var(--white);
+  }
+  .total-cost-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 700; color: #4ade80;
+    line-height: 1;
+  }
+  .total-cost-label { color: rgba(255,255,255,0.5); margin-top: 0.5rem; font-size: 0.9rem; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--navy);
+    padding: 3rem 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  footer .container {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .footer-brand { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--white); font-weight: 700; }
+  .footer-meta { font-size: 0.78rem; color: rgba(255,255,255,0.35); }
+
+  /* ─── SVG Radar preview ─── */
+  .radar-preview {
+    margin-top: 3.5rem; text-align: center;
+  }
+
+  /* ─── Divider ─── */
+  .divider {
+    width: 60px; height: 3px;
+    background: var(--navy);
+    border-radius: 2px;
+    margin: 1.5rem 0;
+  }
+  .section-dark .divider { background: rgba(255,255,255,0.2); }
+
+  /* ─── Highlight ─── */
+  .highlight-text { color: var(--navy); font-weight: 600; }
+  .section-dark .highlight-text { color: var(--white); }
+
+  /* counter animation */
+  .counter { font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 640px) {
+    .hero-stats { grid-template-columns: 1fr; }
+    .flow-timeline::before { display: none; }
+    .flow-step { flex-direction: column; }
+    .flow-dot { width: 40px; height: 40px; font-size: 0.7rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <span class="nav-logo">talgap</span>
+    <span class="nav-tag">Research Report · 2025</span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="container hero-content">
+    <div class="hero-eyebrow">Decentrathon 5.0 — Team Decentraton · inVision U</div>
+    <h1 class="reveal">
+      Видеть человека,<br>
+      <em>не заявление.</em>
+    </h1>
+    <p class="hero-sub reveal reveal-delay-1">
+      AI-powered платформа многомерной оценки кандидатов для поступления в университет.
+      Нейронаука, адаптивное тестирование и поведенческая телеметрия — вместо эссе, которые не предсказывают ничего.
+    </p>
+    <div class="hero-badges reveal reveal-delay-2">
+      <span class="badge"><span class="badge-dot"></span>Next.js 16 + TypeScript</span>
+      <span class="badge"><span class="badge-dot"></span>Gemini 2.5 Flash</span>
+      <span class="badge"><span class="badge-dot"></span>Supabase</span>
+      <span class="badge"><span class="badge-dot"></span>$0 total cost</span>
+      <span class="badge"><span class="badge-dot"></span>7 измерений</span>
+    </div>
+
+    <div class="hero-stats reveal reveal-delay-3">
+      <div class="hero-stat">
+        <div class="hero-stat-num"><span class="counter" data-target="25">0</span>%</div>
+        <div class="hero-stat-label">Variance в успехе первого курса, объясняемый SAT/UNT — остальные 75% это то, что мы измеряем</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num"><span class="counter" data-target="61">0</span>%</div>
+        <div class="hero-stat-label">False positive rate AI-детекторов эссе на non-native speakers — именно поэтому мы убрали эссе</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num"><span class="counter" data-target="20">0</span> мин</div>
+        <div class="hero-stat-label">Полный assessment flow вместо недель подготовки к тестам и написания personal statements</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="section section-problem">
+  <div class="container">
+    <p class="section-eyebrow reveal">Проблема</p>
+    <h2 class="reveal reveal-delay-1">Традиционный отбор<br>отбирает не тех</h2>
+    <div class="divider reveal reveal-delay-2"></div>
+
+    <div class="problem-grid">
+      <div>
+        <p class="problem-lead reveal">
+          Университеты по всему миру оптимизируются под метрики, которые плохо предсказывают успех — и совсем не предсказывают предпринимательский потенциал.
+        </p>
+        <p style="margin-top:1.5rem" class="reveal reveal-delay-1">
+          Мета-анализ 241 датасета (Richardson et al., 2012) показал: SAT/UNT объясняют лишь <strong>25% variance</strong> в успехе первого курса.
+          Для предпринимательства — ещё меньше. Навык, который ищет Y Combinator — <em>determination</em>, — не измеряется ни одним стандартизированным тестом.
+        </p>
+        <p style="margin-top:1rem" class="reveal reveal-delay-2">
+          Казахстан это осознаёт: в ноябре 2025 правительство подписало соглашение с ETS на разработку замены UNT —
+          <strong>Admissions Insight Test (AIT)</strong> с акцентом на критическое мышление, академическое письмо и творческое мышление.
+        </p>
+      </div>
+      <div>
+        <div class="stat-block red reveal">
+          <div class="stat-num">0</div>
+          <p style="font-size:0.9rem;margin-top:0.5rem;color:var(--gray-700)">
+            <strong>Incremental validity</strong> personal statements поверх GPA для предсказания академического успеха
+          </p>
+          <div class="stat-source">Murphy et al., 2009 meta-analysis · Essays are dead. AI killed them.</div>
+        </div>
+        <div class="stat-block amber reveal reveal-delay-1" style="margin-top:1rem">
+          <div class="stat-num">r = 0.36</div>
+          <p style="font-size:0.9rem;margin-top:0.5rem;color:var(--gray-700)">
+            Корреляция SAT/ACT с GPA первого курса — слабее, чем многие думают
+          </p>
+          <div class="stat-source">48-study meta-analysis · Academic performance ≠ entrepreneurial success</div>
+        </div>
+        <div class="stat-block green reveal reveal-delay-2" style="margin-top:1rem">
+          <div class="stat-num">ρ = .496</div>
+          <p style="font-size:0.9rem;margin-top:0.5rem;color:var(--gray-700)">
+            Корреляция <strong>academic self-efficacy</strong> с GPA — сильнейший некогнитивный предиктор
+          </p>
+          <div class="stat-source">Richardson, Abraham & Bond, 2012 · 241 datasets · That's what we measure.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top:3rem">
+      <p class="section-eyebrow">Сравнение методов</p>
+      <div style="overflow-x:auto">
+        <table class="evidence-table">
+          <thead>
+            <tr>
+              <th>Метод</th>
+              <th>Predictive Validity</th>
+              <th>Вердикт</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Эссе / personal statements</strong></td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:0.82rem">Zero incremental validity поверх GPA</td>
+              <td><span class="verdict dead">✕ Мертвы. AI добил.</span></td>
+            </tr>
+            <tr>
+              <td><strong>Стандартизированные тесты (SAT/UNT)</strong></td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:0.82rem">r = 0.36 с GPA · 25% variance</td>
+              <td><span class="verdict weak">~ Слабо для лидерства</span></td>
+            </tr>
+            <tr>
+              <td><strong>Неструктурированные интервью</strong></td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:0.82rem">Низкая validity</td>
+              <td><span class="verdict dead">✕ Не работают</span></td>
+            </tr>
+            <tr>
+              <td><strong>Структурированные интервью / MMI</strong></td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:0.82rem">+50% лучше unstructured</td>
+              <td><span class="verdict works">✓ Работают</span></td>
+            </tr>
+            <tr>
+              <td><strong>Situational Judgment Tests</strong></td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:0.82rem">ρ = .24–.33 для лидерства</td>
+              <td><span class="verdict works">✓ Video SJT лучше paper</span></td>
+            </tr>
+            <tr>
+              <td><strong>Game-based assessment (Pymetrics)</strong></td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:0.82rem">12,000+ data points · 90%+ completion</td>
+              <td><span class="verdict works">✓ Whitespace для admissions</span></td>
+            </tr>
+            <tr>
+              <td><strong>Adaptive testing (Duolingo CAT)</strong></td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:0.82rem">Test-retest reliability 0.90</td>
+              <td><span class="verdict works">✓ Elo-based scoring</span></td>
+            </tr>
+            <tr>
+              <td><strong>AI-detection эссе (GPTZero)</strong></td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:0.82rem">61% false positive на non-native</td>
+              <td><span class="verdict dead">✕ Опасно. Не использовать.</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESEARCH: INSTITUTIONS -->
+<section class="section section-dark">
+  <div class="container">
+    <p class="section-eyebrow reveal">Лучшие мировые практики</p>
+    <h2 class="reveal reveal-delay-1">Как отбирают<br>лучших в мире</h2>
+    <div class="divider reveal reveal-delay-2"></div>
+    <p class="reveal reveal-delay-2" style="max-width:600px">
+      Minerva, YC, MIT, Thiel Fellowship и UChicago объединяет одно: все они ушли от стандартных метрик
+      к оценке процесса мышления, инициативы и аутентичных способностей.
+    </p>
+
+    <div class="institutions-grid reveal reveal-delay-3">
+      <div class="institution-card">
+        <div class="institution-tag">3.6% acceptance · 100+ nations</div>
+        <div class="institution-name">Minerva University</div>
+        <div class="institution-insight">Полностью test-blind. Timed online cognitive challenges, которые невозможно подготовить. Платформа блокирует внешние ресурсы во время тестирования.</div>
+        <div class="institution-quote">"100% студентов чувствовали что их оценили как реального человека, не набор цифр"</div>
+      </div>
+      <div class="institution-card">
+        <div class="institution-tag">1–2% acceptance · $200B+ alumni</div>
+        <div class="institution-name">Y Combinator</div>
+        <div class="institution-insight">10-минутные Zoom-интервью с rapid-fire вопросами. Главное качество — determination, не intelligence. Сильнейший сигнал: evidence of progress.</div>
+        <div class="institution-quote">"Опишите ситуацию, когда вы успешно хакнули нон-компьютерную систему"</div>
+      </div>
+      <div class="institution-card">
+        <div class="institution-tag">MIT · 2013 → сейчас</div>
+        <div class="institution-name">MIT Maker Portfolio</div>
+        <div class="institution-insight">Evidence of "technically creative work — from surfboards to solar cells, code to cosplay." Character/Personal Qualities — единственный Very Important фактор. Выше тестов и GPA.</div>
+        <div class="institution-quote">Ноль legacy preferences. Ноль региональных квот. Только то, что ты сделал.</div>
+      </div>
+      <div class="institution-card">
+        <div class="institution-tag">$200K · under 22 · Buterin, Field</div>
+        <div class="institution-name">Thiel Fellowship</div>
+        <div class="institution-insight">Оценивают "meaningful progress toward a concrete vision." Rolling обновляемые заявки. Траектория, не snapshot. Выпускники: Ethereum ($400B+), Figma ($20B).</div>
+        <div class="institution-quote">Компании выпускников суммарно оценены в $100B+</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 GAPS -->
+<section class="section">
+  <div class="container">
+    <p class="section-eyebrow reveal">Наш научный вклад</p>
+    <h2 class="reveal reveal-delay-1">Три пробела,<br>которые мы закрываем</h2>
+    <div class="divider reveal reveal-delay-2"></div>
+    <p class="reveal reveal-delay-2" style="max-width:640px">
+      Это не GPT-обёртка. Мы объединяем три доказанных подхода, которые никогда раньше не применялись
+      вместе в контексте university admissions.
+    </p>
+
+    <div class="gaps-grid">
+      <div class="gap-card reveal">
+        <div class="gap-number">01</div>
+        <div class="gap-label">Research Gap</div>
+        <div class="gap-title">Adaptive Conversational AI + Assessment</div>
+        <p class="gap-body">
+          Kira Talent делает видео-ответы, но не адаптивно. Duolingo адаптивный, но не для admissions.
+          Никто не объединил chatbot-интеракцию с адаптивным assessment в одном pipeline. Мы первые.
+        </p>
+      </div>
+      <div class="gap-card reveal reveal-delay-1">
+        <div class="gap-number">02</div>
+        <div class="gap-label">Application Gap</div>
+        <div class="gap-title">Game-Based Assessment в University Admissions</div>
+        <p class="gap-body">
+          BART и digit span валидированы в 500+ нейронаучных исследованиях и в corporate hiring (Pymetrics, Arctic Shores).
+          Но никогда не применялись для поступления в вуз. Это major whitespace с огромным потенциалом.
+        </p>
+      </div>
+      <div class="gap-card reveal reveal-delay-2">
+        <div class="gap-number">03</div>
+        <div class="gap-label">Deployment Gap</div>
+        <div class="gap-title">Effectuation SJT для Отбора Предпринимателей</div>
+        <p class="gap-body">
+          Codreanu, Ahmetoglu & Stephan опубликовали первый валидированный SJT для предпринимательского
+          отбора в Journal of Business Venturing (2025). Нигде не деплоился в admissions. Мы деплоим.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT FLOW -->
+<section class="section section-product">
+  <div class="container">
+    <p class="section-eyebrow reveal">Продукт</p>
+    <h2 class="reveal reveal-delay-1">Assessment Flow<br>для кандидата</h2>
+    <div class="divider reveal reveal-delay-2"></div>
+    <p class="reveal reveal-delay-2" style="max-width:600px">
+      20 минут по ссылке. Пять этапов — каждый измеряет то, что предсказывает реальный успех,
+      а не способность хорошо написать эссе. Фоново: поведенческая телеметрия на всех этапах.
+    </p>
+
+    <div class="flow-timeline">
+      <div class="flow-step reveal">
+        <div class="flow-dot">01</div>
+        <div class="flow-content">
+          <div class="flow-meta">
+            <div class="flow-title">Структурированная анкета</div>
+            <div class="flow-duration">~3 мин</div>
+          </div>
+          <p class="flow-desc">
+            Три UCAS-style вопроса вместо свободного эссе. "Какую проблему в твоём городе ты бы решил имея 50,000 тенге и 2 недели?"
+            Full-screen карточки, один вопрос на экран, Typeform-style. Структура уравнивает шансы — 79% студентов не могут написать
+            традиционное personal statement без помощи репетитора.
+          </p>
+          <div class="flow-tags">
+            <span class="flow-tag">UCAS model</span>
+            <span class="flow-tag">equity by design</span>
+            <span class="flow-tag">keystroke telemetry</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step reveal reveal-delay-1">
+        <div class="flow-dot">02</div>
+        <div class="flow-content">
+          <div class="flow-meta">
+            <div class="flow-title">SJT Сценарии</div>
+            <div class="flow-duration">~5 мин</div>
+          </div>
+          <p class="flow-desc">
+            3–4 ситуационных сценария адаптивной сложности. Elo-engine подбирает следующий по уровню предыдущего ответа.
+            Казахстанские реалии: конфликт в команде школьного проекта, акимат не даёт разрешение, друг списывает с ChatGPT.
+            Кандидат выбирает действие и объясняет почему.
+          </p>
+          <div class="flow-tags">
+            <span class="flow-tag">Codreanu et al. 2025</span>
+            <span class="flow-tag">effectuation SJT</span>
+            <span class="flow-tag">Elo adaptive</span>
+            <span class="flow-tag">KZ context</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step reveal reveal-delay-2">
+        <div class="flow-dot">03</div>
+        <div class="flow-content">
+          <div class="flow-meta">
+            <div class="flow-title">BART Balloon Game</div>
+            <div class="flow-duration">~2 мин</div>
+          </div>
+          <p class="flow-desc">
+            Шарик на весь экран, анимация, pump or cash out. Измеряет risk tolerance и impulsivity.
+            Validated neuroscience paradigm (Lejuez et al., 2002) — 500+ исследований.
+            Визуально это wow-момент для кандидата, а за ним стоит 20 лет нейронауки.
+          </p>
+          <div class="flow-tags">
+            <span class="flow-tag">Lejuez et al. 2002</span>
+            <span class="flow-tag">risk tolerance</span>
+            <span class="flow-tag">impulsivity</span>
+            <span class="flow-tag">500+ studies</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step reveal reveal-delay-3">
+        <div class="flow-dot">04</div>
+        <div class="flow-content">
+          <div class="flow-meta">
+            <div class="flow-title">Digit Span Test</div>
+            <div class="flow-duration">~2 мин</div>
+          </div>
+          <p class="flow-desc">
+            Запоминай последовательность цифр, воспроизведи в обратном порядке. Растёт по сложности адаптивно.
+            Working memory — один из сильнейших предикторов когнитивных способностей, независимый от образования и языка.
+            Идеально для трилингвальной среды Казахстана.
+          </p>
+          <div class="flow-tags">
+            <span class="flow-tag">working memory</span>
+            <span class="flow-tag">culture-fair</span>
+            <span class="flow-tag">Wechsler validated</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step reveal">
+        <div class="flow-dot">05</div>
+        <div class="flow-content">
+          <div class="flow-meta">
+            <div class="flow-title">Voice Response</div>
+            <div class="flow-duration">~3 мин</div>
+          </div>
+          <p class="flow-desc">
+            Один открытый вопрос, ответ голосом. WaveSurfer.js визуализирует звуковую волну в реальном времени.
+            Groq Whisper транскрибирует. Анализ: pitch variability, speaking rate, filler words —
+            fillers это хороший знак аутентичности (человек думает, а не воспроизводит заученное).
+          </p>
+          <div class="flow-tags">
+            <span class="flow-tag">Groq Whisper</span>
+            <span class="flow-tag">prosody analysis</span>
+            <span class="flow-tag">authenticity signal</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:3rem;padding:1.5rem 2rem;background:var(--navy);border-radius:var(--radius);color:rgba(255,255,255,0.7);font-size:0.875rem" class="reveal">
+      <span style="color:white;font-weight:600">Фоново на всех этапах: </span>
+      behavioral telemetry — keystroke dynamics (TypingDNA), paste detection, tab-switch tracking,
+      время на каждом вопросе, chars-per-second. Формирует composite authenticity score.
+      <span style="color:rgba(255,255,255,0.45);font-family:'JetBrains Mono',monospace;font-size:0.75rem">// inspired by CodeSignal Suspicion Score</span>
+    </div>
+  </div>
+</section>
+
+<!-- 7 DIMENSIONS -->
+<section class="section">
+  <div class="container">
+    <p class="section-eyebrow reveal">Scoring Engine</p>
+    <h2 class="reveal reveal-delay-1">7 Измерений личности<br>будущего лидера</h2>
+    <div class="divider reveal reveal-delay-2"></div>
+    <p class="reveal reveal-delay-2" style="max-width:640px">
+      Каждое измерение привязано к конкретному источнику сигнала и академическому исследованию.
+      Gemini 2.5 Flash с Prometheus-style 5-level rubrics. 3 прохода, усредняем. Chain-of-thought перед скором.
+    </p>
+
+    <div class="dimensions-grid reveal reveal-delay-3">
+      <div class="dim-card">
+        <div class="dim-icon">🔧</div>
+        <div class="dim-name">Resourcefulness</div>
+        <div class="dim-source">SJT · Codreanu et al. 2025</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-icon">📈</div>
+        <div class="dim-name">Growth Trajectory</div>
+        <div class="dim-source">Анкета · Thiel "trajectory not snapshot"</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-icon">🤝</div>
+        <div class="dim-name">Social Leadership</div>
+        <div class="dim-source">SJT · Rauch & Frese: proactive .27</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-icon">💡</div>
+        <div class="dim-name">Creative Problem-Solving</div>
+        <div class="dim-source">Voice + BART · Baron & Markman</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-icon">🎙️</div>
+        <div class="dim-name">Authentic Voice</div>
+        <div class="dim-source">Telemetry + Voice · CodeSignal approach</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-icon">🌍</div>
+        <div class="dim-name">Community Commitment</div>
+        <div class="dim-source">Анкета · inVision U core value</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-icon">🧠</div>
+        <div class="dim-name">Cognitive Capacity</div>
+        <div class="dim-source">Digit Span + BART timing · Pymetrics</div>
+      </div>
+    </div>
+
+    <div class="scoring-table reveal" style="margin-top:3rem">
+      <div class="scoring-row header">
+        <div>Dimension</div>
+        <div>Источник сигнала</div>
+        <div>Research basis</div>
+      </div>
+      <div class="scoring-row">
+        <div><strong>Resourcefulness</strong></div>
+        <div>SJT сценарии — ограниченные ресурсы, нестандартные решения</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--gray-500)">Codreanu et al. 2025 effectuation SJT, J. of Business Venturing</div>
+      </div>
+      <div class="scoring-row">
+        <div><strong>Cognitive Capacity</strong></div>
+        <div>Digit span max + timing на BART decisions</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--gray-500)">Pymetrics: 91 traits from games · Wechsler Working Memory</div>
+      </div>
+      <div class="scoring-row">
+        <div><strong>Authentic Voice</strong></div>
+        <div>Behavioral telemetry + prosody analysis голоса</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--gray-500)">CodeSignal Suspicion Score methodology</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<section class="section section-dark">
+  <div class="container">
+    <p class="section-eyebrow reveal">Для приёмной комиссии</p>
+    <h2 class="reveal reveal-delay-1">Dashboard —<br>каждый кандидат как человек</h2>
+    <div class="divider reveal reveal-delay-2"></div>
+    <p class="reveal reveal-delay-2" style="max-width:600px">
+      Комиссия видит не номер в списке, а многомерный портрет. Каждый балл объяснён на естественном языке.
+      Comparison view — side-by-side два кандидата, radar charts наложены.
+    </p>
+
+    <!-- SVG Radar Preview -->
+    <div class="radar-preview reveal reveal-delay-3">
+      <svg width="340" height="320" viewBox="0 0 340 320" style="max-width:100%">
+        <!-- Background hexagon grid -->
+        <g opacity="0.15" stroke="white" stroke-width="1" fill="none">
+          <polygon points="170,40 270,100 270,220 170,280 70,220 70,100" />
+          <polygon points="170,72 240,112 240,192 170,232 100,192 100,112" />
+          <polygon points="170,104 210,124 210,164 170,184 130,164 130,124" />
+        </g>
+        <!-- Axes -->
+        <g opacity="0.2" stroke="white" stroke-width="1">
+          <line x1="170" y1="40" x2="170" y2="280"/>
+          <line x1="70" y1="100" x2="270" y2="220"/>
+          <line x1="270" y1="100" x2="70" y2="220"/>
+        </g>
+        <!-- Data shape candidate 1 -->
+        <polygon points="170,60 255,118 248,210 170,252 90,195 92,108"
+          fill="rgba(79,70,229,0.25)" stroke="rgba(99,102,241,0.9)" stroke-width="2"/>
+        <!-- Data shape candidate 2 (overlay) -->
+        <polygon points="170,75 242,115 238,205 170,242 100,200 102,115"
+          fill="rgba(22,163,74,0.12)" stroke="rgba(34,197,94,0.7)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <!-- Center dot -->
+        <circle cx="170" cy="160" r="3" fill="rgba(255,255,255,0.3)"/>
+        <!-- Labels -->
+        <text x="170" y="28" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="10" font-family="JetBrains Mono">Resourcefulness</text>
+        <text x="295" y="108" text-anchor="start" fill="rgba(255,255,255,0.6)" font-size="10" font-family="JetBrains Mono">Growth</text>
+        <text x="295" y="230" text-anchor="start" fill="rgba(255,255,255,0.6)" font-size="10" font-family="JetBrains Mono">Social</text>
+        <text x="170" y="300" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="10" font-family="JetBrains Mono">Creative</text>
+        <text x="5" y="230" text-anchor="start" fill="rgba(255,255,255,0.6)" font-size="10" font-family="JetBrains Mono">Authentic</text>
+        <text x="5" y="108" text-anchor="start" fill="rgba(255,255,255,0.6)" font-size="10" font-family="JetBrains Mono">Cognitive</text>
+        <!-- Legend -->
+        <rect x="80" y="312" width="10" height="3" rx="1" fill="rgba(99,102,241,0.9)"/>
+        <text x="96" y="317" font-size="9" fill="rgba(255,255,255,0.5)" font-family="JetBrains Mono">Candidate A</text>
+        <rect x="180" y="312" width="10" height="3" rx="1" fill="rgba(34,197,94,0.7)" stroke="rgba(34,197,94,0.7)" stroke-dasharray="3,2"/>
+        <text x="196" y="317" font-size="9" fill="rgba(255,255,255,0.5)" font-family="JetBrains Mono">Candidate B</text>
+      </svg>
+      <p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:0.5rem;font-family:'JetBrains Mono',monospace">
+        Comparison view — два кандидата, radar charts наложены. "Holy shit" момент для демо.
+      </p>
+    </div>
+
+    <div class="fairness-grid" style="margin-top:3.5rem">
+      <div class="fairness-card reveal">
+        <h3>Почему AI-инструменты проваливаются</h3>
+        <div class="failure-item">
+          <div class="failure-icon">✕</div>
+          <div>
+            <div class="failure-title">UT Austin GRADE Algorithm (2013–2020)</div>
+            <div class="failure-desc">Кодировал школы как "elite/good/other" и флагировал ключевые слова в рекомендациях — прямое кодирование prestige bias.</div>
+          </div>
+        </div>
+        <div class="failure-item">
+          <div class="failure-icon">✕</div>
+          <div>
+            <div class="failure-title">Amazon Recruiting AI (2014–2017)</div>
+            <div class="failure-desc">Штрафовал резюме с упоминанием "women's" после обучения на 10 годах данных с преобладанием мужчин.</div>
+          </div>
+        </div>
+        <div class="failure-item">
+          <div class="failure-icon">✕</div>
+          <div>
+            <div class="failure-title">UK A-Level Algorithm (2020)</div>
+            <div class="failure-desc">Снизил 39% оценок с систематическим bias против необеспеченных учеников. Глава Ofqual подал в отставку.</div>
+          </div>
+        </div>
+      </div>
+      <div class="fairness-card reveal reveal-delay-1">
+        <h3>Как мы защищаемся</h3>
+        <div class="principle-item">
+          <div class="principle-check">✓</div>
+          <div class="principle-text">SHAP/LIME explainability из коробки — каждый балл объяснён на естественном языке</div>
+        </div>
+        <div class="principle-item">
+          <div class="principle-check">✓</div>
+          <div class="principle-text">Fairlearn bias audit — распределение баллов по регионам KZ, языку (KZ/RU/EN), типу школы</div>
+        </div>
+        <div class="principle-item">
+          <div class="principle-check">✓</div>
+          <div class="principle-text">Human-in-the-loop всегда — AI даёт информацию, человек принимает решение</div>
+        </div>
+        <div class="principle-item">
+          <div class="principle-check">✓</div>
+          <div class="principle-text">EU AI Act alignment — система соответствует требованиям High-Risk AI в образовании (август 2026)</div>
+        </div>
+        <div class="principle-item">
+          <div class="principle-check">✓</div>
+          <div class="principle-text">Нет auto-reject — платформа ранжирует, финальное решение остаётся за комиссией</div>
+        </div>
+        <div class="principle-item">
+          <div class="principle-check">✓</div>
+          <div class="principle-text">Traffic light fairness indicators — зелёный если parity ratio > 0.8, красный < 0.6</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section class="section">
+  <div class="container">
+    <p class="section-eyebrow reveal">Технологический стек</p>
+    <h2 class="reveal reveal-delay-1">Построено на<br>production-grade инструментах</h2>
+    <div class="divider reveal reveal-delay-2"></div>
+
+    <div class="stack-grid reveal reveal-delay-2">
+      <div class="stack-item">
+        <div class="stack-name">Next.js 16</div>
+        <div class="stack-role">All application</div>
+        <span class="stack-cost">Free</span>
+      </div>
+      <div class="stack-item">
+        <div class="stack-name">Vercel</div>
+        <div class="stack-role">Deploy</div>
+        <span class="stack-cost">Free</span>
+      </div>
+      <div class="stack-item">
+        <div class="stack-name">Supabase</div>
+        <div class="stack-role">Database + Auth</div>
+        <span class="stack-cost">Free</span>
+      </div>
+      <div class="stack-item">
+        <div class="stack-name">Gemini 2.5 Flash</div>
+        <div class="stack-role">LLM scoring</div>
+        <span class="stack-cost">Free tier</span>
+      </div>
+      <div class="stack-item">
+        <div class="stack-name">Groq Whisper</div>
+        <div class="stack-role">Speech-to-text</div>
+        <span class="stack-cost">Free tier</span>
+      </div>
+      <div class="stack-item">
+        <div class="stack-name">Fairlearn</div>
+        <div class="stack-role">Bias auditing</div>
+        <span class="stack-cost">Free</span>
+      </div>
+      <div class="stack-item">
+        <div class="stack-name">Recharts + Nivo</div>
+        <div class="stack-role">Radar + Waterfall</div>
+        <span class="stack-cost">Free</span>
+      </div>
+      <div class="stack-item">
+        <div class="stack-name">TypingDNA</div>
+        <div class="stack-role">Keystroke dynamics</div>
+        <span class="stack-cost">Free</span>
+      </div>
+      <div class="stack-item">
+        <div class="stack-name">WaveSurfer.js</div>
+        <div class="stack-role">Voice visualizer</div>
+        <span class="stack-cost">Free</span>
+      </div>
+      <div class="stack-item">
+        <div class="stack-name">Framer Motion</div>
+        <div class="stack-role">Animations</div>
+        <span class="stack-cost">Free</span>
+      </div>
+      <div class="stack-item">
+        <div class="stack-name">shadcn/ui</div>
+        <div class="stack-role">UI components</div>
+        <span class="stack-cost">Free</span>
+      </div>
+      <div class="stack-item">
+        <div class="stack-name">Tailwind v4</div>
+        <div class="stack-role">Styling</div>
+        <span class="stack-cost">Free</span>
+      </div>
+    </div>
+
+    <div class="total-cost reveal" style="margin-top:3rem">
+      <div class="total-cost-num">$0</div>
+      <p class="total-cost-label">Total infrastructure cost · Полностью на free tier сервисах</p>
+      <p style="color:rgba(255,255,255,0.3);font-size:0.78rem;margin-top:0.5rem;font-family:'JetBrains Mono',monospace">
+        // production-ready · scales to 1000+ candidates · no vendor lock-in
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CONCLUSION -->
+<section class="section section-dark">
+  <div class="container">
+    <p class="section-eyebrow reveal">Итог</p>
+    <h2 class="reveal reveal-delay-1">Не замена человека.<br>Суперсила для комиссии.</h2>
+    <div class="divider reveal reveal-delay-2"></div>
+    <p class="reveal reveal-delay-2" style="max-width:700px;font-size:1.1rem;line-height:1.75">
+      talgap — это не автоматизация отказов. Это инструмент, который за 20 минут даёт комиссии
+      тот многомерный портрет кандидата, который раньше требовал дней интервью и стопок бумаг.
+      AI поверхностно организует информацию. Человек принимает решение.
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-top:3.5rem">
+      <div class="reveal" style="padding:2rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius)">
+        <div style="font-family:'Playfair Display',serif;font-size:2rem;color:white;font-weight:700;line-height:1">30</div>
+        <p style="font-size:0.82rem;color:rgba(255,255,255,0.5);margin-top:0.5rem">Студентов в первом когорте inVision U — уже создали RSL Kazakhstan и DataHub</p>
+      </div>
+      <div class="reveal reveal-delay-1" style="padding:2rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius)">
+        <div style="font-family:'Playfair Display',serif;font-size:2rem;color:white;font-weight:700;line-height:1">~1000</div>
+        <p style="font-size:0.82rem;color:rgba(255,255,255,0.5);margin-top:0.5rem">Заявок в программу Beginit из 6+ регионов Казахстана — рынок готов</p>
+      </div>
+      <div class="reveal reveal-delay-2" style="padding:2rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius)">
+        <div style="font-family:'Playfair Display',serif;font-size:2rem;color:white;font-weight:700;line-height:1">13.7%</div>
+        <p style="font-size:0.82rem;color:rgba(255,255,255,0.5);margin-top:0.5rem">Рабочего населения Казахстана использует generative AI — #1 в Центральной Азии</p>
+      </div>
+      <div class="reveal reveal-delay-3" style="padding:2rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius)">
+        <div style="font-family:'Playfair Display',serif;font-size:2rem;color:white;font-weight:700;line-height:1">2025</div>
+        <p style="font-size:0.82rem;color:rgba(255,255,255,0.5);margin-top:0.5rem">Казахстан подписал соглашение с ETS на замену UNT — наш момент</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div>
+      <div class="footer-brand">talgap</div>
+      <p class="footer-meta" style="margin-top:0.25rem">AI-powered candidate assessment · inVision U · Decentrathon 5.0</p>
+    </div>
+    <div style="text-align:right">
+      <p class="footer-meta">Team Decentraton</p>
+      <p class="footer-meta" style="margin-top:0.25rem;font-family:'JetBrains Mono',monospace;font-size:0.65rem">Built with Next.js · Deployed on Vercel · $0 total cost</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '-40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Counter animation
+  function animateCounter(el, target, duration = 1200) {
+    let start = 0;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) {
+        el.textContent = target;
+        clearInterval(timer);
+      } else {
+        el.textContent = Math.floor(start);
+      }
+    }, 16);
+  }
+
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const counters = entry.target.querySelectorAll('.counter');
+        counters.forEach(c => animateCounter(c, parseInt(c.dataset.target)));
+        counterObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  const heroStats = document.querySelector('.hero-stats');
+  if (heroStats) counterObserver.observe(heroStats);
+
+  // Trigger hero reveals immediately
+  setTimeout(() => {
+    document.querySelectorAll('.hero .reveal').forEach((el, i) => {
+      setTimeout(() => el.classList.add('visible'), i * 120);
+    });
+  }, 100);
+</script>
+</body>
+</html>
